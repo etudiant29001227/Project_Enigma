@@ -41,6 +41,7 @@
         android:background="@drawable/dialog_style"
         android:padding="7dp"
         android:text="Onii-chan, BAKA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        android:gravity="center"
         android:textColor="@color/white"
         tools:paddingLeft="30dp" />
 
