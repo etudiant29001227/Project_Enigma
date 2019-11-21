@@ -6,8 +6,13 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 
@@ -33,6 +38,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
     private  Location gLocation;
+    private LocationManager locationManager;
+    private PendingIntent proximityIntent;
+    private ProximityBroadCastReceiver receiver;
+    private IntentFilter filter;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +53,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        //addContentView(this,R.layout.character_dialog);
 
         if(fusedLocationProviderClient == null){
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -65,6 +76,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationRequest.setInterval(REFRESH);
         locationRequest.setFastestInterval(REFRESH_FASTER);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Intent intent = new Intent("com.example.position.ProximityAlert");
+        proximityIntent = PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        receiver = new ProximityBroadCastReceiver();
+        filter = new IntentFilter("com.example.position.ProximityAlert");
 
     }
 
@@ -110,6 +127,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }else{
             startLocationUpdates();
         }
+
+        locationManager.addProximityAlert(0,0,1000.0f,-1,proximityIntent);
     }
 
     private void startLocationUpdates(){
@@ -120,6 +139,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onPause(){
         super.onPause();
         stopLocationUpdates();
+        locationManager.removeProximityAlert(proximityIntent);
+        unregisterReceiver(receiver);
     }
 
     private void stopLocationUpdates(){

@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Enigma {
 
-    private int nbChapter,currentChapter,chapterFinish,radius,currentDialog = 0;
+    private int nbChapter,currentChapter,chapterFinish,radius,currentDialog;
     private List<String> chapterDialog,help;
     private LatLng target;
     private String file;
@@ -32,6 +32,7 @@ public class Enigma {
 
         currentChapter = 1;
         chapterFinish = 0;
+        currentDialog = 0;
     }
 
     public int getNbChapter() {
@@ -64,17 +65,12 @@ public class Enigma {
         return !(chapterFinish<nbChapter);
     }
 
-    public void nextChapter(){
+    private void nextChapter(){
 
         JSONParser jsonFile = new JSONParser(file);
 
-        currentChapter++;
-        chapterFinish++;
-        if(!isWin()){
-
             try {
 
-                nbChapter = jsonFile.getInt("nbChapter");
                 chapterDialog = jsonFile.getDialog("Dialog_Chapter_"+currentChapter);
                 help = jsonFile.getDialog("Help_Chapter_"+currentChapter);
                 target = jsonFile.getCoordinate("Target_Chapter_"+currentChapter);
@@ -83,9 +79,29 @@ public class Enigma {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+    }
+
+    public void nextStep(){
+
+        currentChapter++;
+        chapterFinish++;
+
+        if(!isWin()){
+            nextChapter();
+        }
+    }
+
+    public String getAllDialog(){
+
+        String allDialog = "";
+
+        for(int i = 0; i< currentDialog;i++){
+
+            allDialog+= chapterDialog.get(i)+"\n\n";
+
         }
 
-
+        return allDialog;
     }
 
 }
