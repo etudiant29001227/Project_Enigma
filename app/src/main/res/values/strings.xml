@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Détective Laura</string>
+    <string name="egnime" translatable="false">Egnime 1</string>
+    <string name="title_egnime" translatable="false">Choisir une égnime</string>
+    <string name="start" translatable="false">Commcer la partie</string>
+    <string name="option" translatable="false">Option</string>
+    <string name="title_activity_maps" translatable="false">Map</string>
+</resources>

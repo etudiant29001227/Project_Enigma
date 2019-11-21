@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Level">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="5mm"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold"
+            android:text="@string/title_egnime" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="291dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/difficulty5"
+            android:layout_width="91dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="15dp"
+            android:text="@string/egnime" />
+
+<!--        <Button-->
+<!--            android:id="@+id/difficulty4"-->
+<!--            android:layout_width="88dp"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="@string/egnime" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/difficulty3"-->
+<!--            android:layout_width="91dp"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="@string/egnime" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/difficulty2"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="@string/egnime" />-->
+
+<!--        <Button-->
+<!--            android:id="@+id/difficulty1"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:layout_marginBottom="15dp"-->
+<!--            android:text="@string/egnime" />-->
+    </LinearLayout>
+
+</RelativeLayout>
