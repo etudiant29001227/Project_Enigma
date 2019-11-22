@@ -1,6 +1,7 @@
 package com.example.project_e;
 
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -11,9 +12,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -26,11 +38,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.location.*;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
 
     private final static long REFRESH_FASTER = 100;
     private final static long REFRESH = 500;
-    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private final static int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private final static  int MY_PERMISSIONS_REQUEST_CAMERA = 100;
 
     private GoogleMap mMap;
     private Marker marker;
@@ -42,6 +55,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private PendingIntent proximityIntent;
     private ProximityBroadCastReceiver receiver;
     private IntentFilter filter;
+    private TextView dialogBox;
+    private ImageView detectiveImage;
+    private SensorManager sensorManager;
+    private Sensor shakeSensor;
+    private float acelVal,acelLast,shake;
+    private MediaPlayer playSong;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,22 +73,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //addContentView(this,R.layout.character_dialog);
+        dialogBox = findViewById(R.id.detectivedialog);
+        detectiveImage = findViewById(R.id.detective);
 
-        if(fusedLocationProviderClient == null){
+        if (fusedLocationProviderClient == null) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            locationCallback = new LocationCallback(){
+            locationCallback = new LocationCallback() {
                 @Override
-                public void onLocationResult(LocationResult locationResult){
-                    if(locationResult == null){
+                public void onLocationResult(LocationResult locationResult) {
+                    if (locationResult == null) {
                         return;
                     }
-                    for(Location location : locationResult.getLocations()){
+                    for (Location location : locationResult.getLocations()) {
                         updateMark(location);
                         return;
                     }
                 }
             };
+        }
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+            detectiveImage.setVisibility(View.GONE);
+            dialogBox.setVisibility(View.GONE);
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent, MY_PERMISSIONS_REQUEST_CAMERA);
+
         }
 
         locationRequest = LocationRequest.create();
@@ -78,13 +107,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Intent intent = new Intent("com.example.position.ProximityAlert");
-        proximityIntent = PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent("com.example.project_e.ProximityAlert");
+        proximityIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         receiver = new ProximityBroadCastReceiver();
-        filter = new IntentFilter("com.example.position.ProximityAlert");
+        filter = new IntentFilter("com.example.project_e.ProximityAlert");
+        registerReceiver(receiver,filter);
 
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        shakeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        playSong();
     }
-
 
     public void updateMark(Location location){
 
@@ -99,12 +133,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(marker != null) {
 
                 marker.remove();
-
-
                 marker = mMap.addMarker(new MarkerOptions().position(latLng));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
-                System.out.println("Location : "+latLng);
 
             }else {
 
@@ -128,7 +158,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             startLocationUpdates();
         }
 
-        locationManager.addProximityAlert(0,0,1000.0f,-1,proximityIntent);
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+                    MY_PERMISSIONS_REQUEST_CAMERA);
+        }
+
+        sensorManager.registerListener(this,shakeSensor,SensorManager.SENSOR_DELAY_NORMAL);
+        acelVal = SensorManager.GRAVITY_EARTH;
+        acelLast = SensorManager.GRAVITY_EARTH;
+        shake = 0.00f;
+        locationManager.addProximityAlert(-20.9054529 ,55.500220999999996,100.0f,-1,proximityIntent);
+
+    }
+
+    private void playSong(){
+        if(playSong == null){
+            playSong = MediaPlayer.create(this,R.raw.allisfine);
+            playSong.setLooping(true);
+            playSong.start();
+        }
+    }
+
+    private void stopSong(){
+
+        if(playSong!=null){
+            playSong.pause();
+        }
     }
 
     private void startLocationUpdates(){
@@ -139,22 +194,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onPause(){
         super.onPause();
         stopLocationUpdates();
-        locationManager.removeProximityAlert(proximityIntent);
-        unregisterReceiver(receiver);
+        sensorManager.unregisterListener(this);
+        try{
+            if(locationManager != null){
+                locationManager.removeProximityAlert(proximityIntent);
+                unregisterReceiver(receiver);
+            }
+        }catch (SecurityException e){}
     }
 
     private void stopLocationUpdates(){
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -178,10 +229,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
+        if(requestCode == MY_PERMISSIONS_REQUEST_CAMERA){
+            Bitmap captureImage = (Bitmap) data.getExtras().get("data");
+        }
+    }
+
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
     }
 
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+        float x = event.values[0];
+        float y = event.values[1];
+        float z = event.values[2];
+
+        acelLast = acelVal;
+        acelVal = (float) Math.sqrt((double)(x*x+y*y+z*z));
+        float delta = acelVal - acelLast;
+        shake = shake * 0.9f + delta;
+        if(shake>12) {
+            dialogBox.setText("Test 2");
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }
 

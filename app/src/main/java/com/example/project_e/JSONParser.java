@@ -1,18 +1,13 @@
 package com.example.project_e;
 
-import android.os.Message;
+
 import android.util.JsonReader;
 import android.util.JsonToken;
-
 import com.google.android.gms.maps.model.LatLng;
-
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -20,10 +15,10 @@ public class JSONParser {
 
     JsonReader readFile;
 
-    public JSONParser(String f){
+    public JSONParser(String file){
 
         try {
-            String fpath = "/res/enigma-res/" + f + ".json";
+            String fpath = "/res/enigma-res/" + file + ".json";
             InputStream inputStreamFile = new FileInputStream(fpath);
             readFile = new JsonReader(new InputStreamReader(inputStreamFile,"UTF-8"));
 

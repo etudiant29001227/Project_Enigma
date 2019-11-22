@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Enigma {
 
-    private int nbChapter,currentChapter,chapterFinish,radius,currentDialog;
+    private int nbChapter,currentChapter,chapterFinish,radius,currentDialog,currentHelp;
     private List<String> chapterDialog,help;
     private LatLng target;
     private String file;
@@ -33,6 +33,7 @@ public class Enigma {
         currentChapter = 1;
         chapterFinish = 0;
         currentDialog = 0;
+        currentHelp = 0;
     }
 
     public int getNbChapter() {
@@ -44,12 +45,31 @@ public class Enigma {
     }
 
 
-    public List<String> getChapterDialog() {
-        return chapterDialog;
+    public String getCurrentChapterDialog() {
+
+        String currentDialogString = chapterDialog.get(currentDialog);
+
+        if(currentDialog<chapterDialog.size()-1){
+            currentDialog++;
+        }else{
+            currentDialog = 0;
+        }
+
+        return currentDialogString;
     }
 
-    public List<String> getHelp() {
-        return help;
+    public String getHelp() {
+
+        String currentHelpString = help.get(currentHelp);
+
+        if(currentHelp<help.size()-1){
+            currentHelp++;
+        }else{
+            currentHelp = 0;
+        }
+
+
+        return currentHelpString;
     }
 
 

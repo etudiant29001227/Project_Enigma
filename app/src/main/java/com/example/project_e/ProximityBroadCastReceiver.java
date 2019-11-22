@@ -16,8 +16,10 @@ public class ProximityBroadCastReceiver extends BroadcastReceiver {
         String key = LocationManager.KEY_PROXIMITY_ENTERING;
         Boolean entering = intent.getBooleanExtra(key,false);
 
-        if(!entering){
+        if(entering){
             message = context.getString(R.string.zoneWaring);
+        }else{
+            message = "entré dans la zone";
         }
 
         Toast toast = Toast.makeText(context,message,Toast.LENGTH_LONG);

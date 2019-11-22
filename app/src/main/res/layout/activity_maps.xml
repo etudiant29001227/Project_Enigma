@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MapsActivity">
 
 
@@ -24,6 +25,7 @@
         android:layout_centerInParent="true"
         android:layout_marginRight="5dp"
         android:layout_marginBottom="78dp"
+        android:visibility="gone"
         android:src="@drawable/detectivelaura" />
 
     <TextView
@@ -40,10 +42,11 @@
         android:layout_marginBottom="25dp"
         android:background="@drawable/dialog_style"
         android:padding="7dp"
-        android:text="Onii-chan, BAKA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        android:text=""
         android:gravity="center"
         android:textColor="@color/white"
-        tools:paddingLeft="30dp" />
+        tools:paddingLeft="30dp"
+        android:visibility="gone"/>
 
 
 </RelativeLayout>
