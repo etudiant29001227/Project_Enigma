@@ -1,0 +1,11 @@
+
+    {
+        "nbChapter":1,
+        "Dialog_Chapter_1":["You want to know why they are here? Cause I found it! The tomb! They should all be dead... trapped inside - but these ones are not, why? ",
+                            "Be brave, Scur, for your brothers, sick and twisted in the tubes! New ideas are within our reach that could cure us all. Send the Draga to reinforce the location we discussed.",
+                            "Scur, if you saw too many words I'm sorry, I forgot who I was writing to, so assuming you just read the big letters..."],
+        "Help_Chapter_1":["The additional test Marines have arrived. The specimens tore through previous batch much faster than expected. It should be noted that Marines who survived the longest were using fire based weapons.",
+                           "The Infested are vulnerable to fire. I have sent a fire damage mod for you to install on your Melee weapon. It should aid you in your coming mission. "],
+        "Target_Chapter_1":[-20.9054529,55.500220999999996]
+
+    }
