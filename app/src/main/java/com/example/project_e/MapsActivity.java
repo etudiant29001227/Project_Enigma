@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -44,6 +45,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final static long REFRESH = 500;
     private final static int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private final static  int MY_PERMISSIONS_REQUEST_CAMERA = 100;
+    private final static int VISIBLE = 500;
+    private final static int UNVISIBLE = 404;
 
     private GoogleMap mMap;
     private Marker marker;
@@ -61,6 +64,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Sensor shakeSensor;
     private float acelVal,acelLast,shake;
     private MediaPlayer playSong;
+    private GoogleMapOptions options;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
 
         dialogBox = findViewById(R.id.detectivedialog);
         detectiveImage = findViewById(R.id.detective);
@@ -92,14 +98,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             };
         }
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-            detectiveImage.setVisibility(View.GONE);
-            dialogBox.setVisibility(View.GONE);
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(intent, MY_PERMISSIONS_REQUEST_CAMERA);
-
-        }
 
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(REFRESH);
@@ -117,35 +115,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         shakeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
+
+
         playSong();
     }
 
-    public void updateMark(Location location){
 
-        gLocation = location;
-
-         if(location != null){
-
-             double latitude = location.getLatitude();
-             double longitude = location.getLongitude();
-             LatLng latLng = new LatLng(latitude, longitude);
-
-            if(marker != null) {
-
-                marker.remove();
-                marker = mMap.addMarker(new MarkerOptions().position(latLng));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-
-            }else {
-
-                marker = mMap.addMarker(new MarkerOptions().position(latLng));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-
-            }
-         }else{
-             System.out.println("Can't update location");
-         }
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        mMap.getUiSettings().setCompassEnabled(false);
+        //mMap.getUiSettings().setZoomGesturesEnabled(false);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
     }
+
 
     @Override
     public  void onResume(){
@@ -171,25 +153,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private void playSong(){
-        if(playSong == null){
-            playSong = MediaPlayer.create(this,R.raw.allisfine);
-            playSong.setLooping(true);
-            playSong.start();
-        }
-    }
-
-    private void stopSong(){
-
-        if(playSong!=null){
-            playSong.pause();
-        }
-    }
-
-    private void startLocationUpdates(){
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,null);
-    }
-
     @Override
     protected void onPause(){
         super.onPause();
@@ -203,41 +166,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }catch (SecurityException e){}
     }
 
-    private void stopLocationUpdates(){
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted
-                    startLocationUpdates();
-                } else {
-                    // permission denied
-                    updateMark(null);
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
         if(requestCode == MY_PERMISSIONS_REQUEST_CAMERA){
             Bitmap captureImage = (Bitmap) data.getExtras().get("data");
         }
-    }
 
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+
     }
 
 
@@ -261,5 +198,112 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    startLocationUpdates();
+                } else {
+
+                    updateMark(null);
+                }
+                return;
+            }
+        }
+    }
+
+    private void playSong(){
+        if(playSong == null){
+            playSong = MediaPlayer.create(this,R.raw.allisfine);
+            playSong.setLooping(true);
+            playSong.start();
+        }
+    }
+
+    private void stopSong(){
+
+        if(playSong!=null){
+            playSong.pause();
+        }
+    }
+
+    private void startLocationUpdates(){
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,locationCallback,null);
+    }
+
+
+
+    private void stopLocationUpdates(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+
+
+    public void updateMark(Location location){
+
+        gLocation = location;
+
+        if(location != null){
+
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+            LatLng latLng = new LatLng(latitude, longitude);
+
+            if(marker != null) {
+
+                marker.remove();
+                marker = mMap.addMarker(new MarkerOptions().position(latLng));
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+            }else {
+
+                marker = mMap.addMarker(new MarkerOptions().position(latLng));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+            }
+        }else{
+            System.out.println("Can't update location");
+        }
+    }
+
+    private boolean nearToTarget(Location l1, Location l2, int minDistance){
+        return l1.distanceTo(l2)<=minDistance;
+    }
+
+    private void cameraEvent(){
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent, MY_PERMISSIONS_REQUEST_CAMERA);
+            setVisiblyDetective(UNVISIBLE);
+
+        }
+
+    }
+
+    public void setVisiblyDetective(int visible){
+
+        switch (visible){
+
+            case UNVISIBLE:
+
+                detectiveImage.setVisibility(View.GONE);
+                dialogBox.setVisibility(View.GONE);
+
+            case VISIBLE:
+
+                detectiveImage.setVisibility(View.VISIBLE);
+                dialogBox.setVisibility(View.VISIBLE);
+        }
+
+    }
+
 }
 

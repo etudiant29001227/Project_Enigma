@@ -17,7 +17,7 @@ public class ProximityBroadCastReceiver extends BroadcastReceiver {
         Boolean entering = intent.getBooleanExtra(key,false);
 
         if(entering){
-            message = context.getString(R.string.zoneWaring);
+            message = context.getString(R.string.zoneWaringOut);
         }else{
             message = "entré dans la zone";
         }
