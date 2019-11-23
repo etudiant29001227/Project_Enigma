@@ -8,47 +8,57 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JSONParser {
 
-    JsonReader readFile;
+    InputStream readFile;
 
-    public JSONParser(String file){
+    public JSONParser(InputStream file){
 
-        try {
-            String fpath = "/res/enigma-res/" + file + ".json";
-            InputStream inputStreamFile = new FileInputStream(fpath);
-            readFile = new JsonReader(new InputStreamReader(inputStreamFile,"UTF-8"));
+        //String fpath = "../res/enigma-res/" + file + ".json";
+        //InputStream inputStreamFile = new FileInputStream(fpath);
+        readFile = new PushbackInputStream(file);
+        readFile.mark(1024*1024);
 
-        }catch (IOException e){
-            System.out.println("Can't read file");
-        }
     }
+
+    private JsonReader openJson() throws IOException{
+        readFile.reset();
+        return new JsonReader(new InputStreamReader(readFile,"UTF-8"));
+
+    }
+
 
     public List<String> getDialog(String key) throws IOException {
 
-        List<String> dialog = new CopyOnWriteArrayList<String>();
+        JsonReader reader = openJson();
+        System.out.println("apres openfile");
 
-        readFile.beginObject();
-        while (readFile.hasNext()) {
-            String name = readFile.nextName();
-            if (name.equals(key) && readFile.peek() != JsonToken.NULL) {
-                dialog = readDialog(readFile);
+        List<String> dialog = new CopyOnWriteArrayList<>();
+        if(reader != null)System.out.println("avant begin");
+        reader.beginObject();
+        System.out.println("apres  begin");
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if (name.equals(key) && reader.peek() != JsonToken.NULL) {
+                dialog = readDialog(reader);
             } else {
-                readFile.skipValue();
+                reader.skipValue();
             }
         }
-        readFile.endObject();
-
+        reader.endObject();
+        System.out.println("apres end");
+        reader.close();
         return dialog;
     }
 
 
     public List<String> readDialog(JsonReader reader) throws IOException{
 
-         List<String> dialog = new CopyOnWriteArrayList<String>();
+         List<String> dialog = new CopyOnWriteArrayList<>();
 
         reader.beginArray();
         while (reader.hasNext()){
@@ -74,58 +84,60 @@ public class JSONParser {
 
     public LatLng getCoordinate(String key) throws IOException {
 
+        JsonReader reader = openJson();
+
         LatLng coord = null;
 
-        readFile.beginObject();
-        while (readFile.hasNext()) {
-            String name = readFile.nextName();
-             if (name.equals(key) && readFile.peek() != JsonToken.NULL) {
-                coord = getLalng(readFile);
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+             if (name.equals(key) && reader.peek() != JsonToken.NULL) {
+                coord = getLalng(reader);
             } else {
-                readFile.skipValue();
+                reader.skipValue();
             }
         }
-        readFile.endObject();
-
+        reader.endObject();
+        reader.close();
         return coord;
     }
 
     public int getInt(String key) throws IOException {
 
+        JsonReader reader = openJson();
         int intValue = -1;
 
-        readFile.beginObject();
-        while (readFile.hasNext()) {
-            String name = readFile.nextName();
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
             if (name.equals(key)) {
-                intValue = readFile.nextInt();
+                intValue = reader.nextInt();
             } else {
-                readFile.skipValue();
+                reader.skipValue();
             }
         }
-        readFile.endObject();
-
+        reader.endObject();
+        reader.close();
         return intValue;
     }
 
     public String getString(String key) throws IOException {
 
+        JsonReader reader = openJson();
         String stringValue = null;
 
-        readFile.beginObject();
-        while (readFile.hasNext()) {
-            String name = readFile.nextName();
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
             if (name.equals(key)) {
-                stringValue = readFile.nextString();
+                stringValue = reader.nextString();
             } else {
-                readFile.skipValue();
+                reader.skipValue();
             }
-        }
-        readFile.endObject();
-
+}
+        reader.endObject();
+        reader.close();
         return stringValue;
     }
-
-    public void close(){};
 
 }

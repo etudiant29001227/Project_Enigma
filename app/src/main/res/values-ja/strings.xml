@@ -2,9 +2,12 @@
 <resources>
     <string name="app_name">名探偵らうら</string>
     <string name="zoneWaringOut">あなたはパズルエリアから出てきました</string>
-    <string name="title_egnime" translatable="false">謎を選ぶ</string>
+    <string name="title_enigme" translatable="false">謎を選ぶ</string>
     <string name="option">オプション</string>
     <string name="start" translatable="false">ゲームを始める</string>
     <string name="egnime">エニグマ一</string>
     <string name="zoneWaringIn">あなたはパズルエリアにいます</string>
+    <string name="language">言語を変更する</string>
+    <string name="fr">フランス語</string>
+    <string name="jp">日本人</string>
 </resources>

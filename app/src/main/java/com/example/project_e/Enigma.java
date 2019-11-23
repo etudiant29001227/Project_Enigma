@@ -3,6 +3,7 @@ package com.example.project_e;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class Enigma {
@@ -10,30 +11,34 @@ public class Enigma {
     private int nbChapter,currentChapter,chapterFinish,radius,currentDialog,currentHelp;
     private List<String> chapterDialog,help;
     private LatLng target;
-    private String file;
+    private InputStream file;
     
 
-    public Enigma(String file){
+    public Enigma(InputStream file){
 
         this.file = file;
-        JSONParser jsonFile = new JSONParser(file);
 
-        try {
-
-            nbChapter = jsonFile.getInt("nbChapter");
-            chapterDialog = jsonFile.getDialog("Dialog_Chapter_"+currentChapter);
-            help = jsonFile.getDialog("Help_Chapter_"+currentChapter);
-            target = jsonFile.getCoordinate("Target_Chapter_"+currentChapter);
-            radius = jsonFile.getInt("Radius_Chapter_"+currentChapter);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        if(file == null)System.out.println("enigma is null");
 
         currentChapter = 1;
         chapterFinish = 0;
         currentDialog = 0;
         currentHelp = 0;
+        try {
+            JSONParser jsonFile = new JSONParser(file);
+            nbChapter = jsonFile.getInt("nbChapter");
+            System.out.println("apres getInt");
+            chapterDialog = jsonFile.getDialog("Dialog_Chapter_"+currentChapter);
+            System.out.println("apres getFialog 1");
+            help = jsonFile.getDialog("Help_Chapter_"+currentChapter);
+            System.out.println("apres getFialog 2");
+            target = jsonFile.getCoordinate("Target_Chapter_"+currentChapter);
+            System.out.println("apres getCoordinate");
+
+        } catch (IOException e) {
+            System.out.println("class enigma");
+            e.printStackTrace();
+        }
     }
 
     public int getNbChapter() {
@@ -60,14 +65,15 @@ public class Enigma {
 
     public String getHelp() {
 
-        String currentHelpString = help.get(currentHelp);
-
-        if(currentHelp<help.size()-1){
-            currentHelp++;
-        }else{
-            currentHelp = 0;
-        }
-
+        String currentHelpString="";
+        System.out.println(help);
+//
+//        if(currentHelp<help.size()-1){
+//            currentHelpString = help.get(currentHelp);
+//            currentHelp++;
+//        }else{
+//            currentHelp = 0;
+//        }
 
         return currentHelpString;
     }

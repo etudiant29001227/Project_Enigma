@@ -4,15 +4,18 @@ package com.example.project_e;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.PendingIntent;
+import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -22,10 +25,16 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
+import android.view.GestureDetector;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -38,8 +47,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.location.*;
 
+import java.io.File;
+import java.io.InputStream;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener {
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, SensorEventListener{
 
     private final static long REFRESH_FASTER = 100;
     private final static long REFRESH = 500;
@@ -50,37 +62,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private Marker marker;
+    private Handler handler;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    private  Location gLocation;
+    private Location gLocation;
     private LocationManager locationManager;
     private PendingIntent proximityIntent;
     private ProximityBroadCastReceiver receiver;
     private IntentFilter filter;
-    private TextView dialogBox;
+    private TextView dialogBox, allDialogBox;
     private ImageView detectiveImage;
     private SensorManager sensorManager;
     private Sensor shakeSensor;
     private float acelVal,acelLast,shake;
     private MediaPlayer playSong;
-    private GoogleMapOptions options;
+    private GestureDetectorCompat gestureDetector;
+    private Enigma enigma;
 
 
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
+        handler = new Handler();
+        String file = getIntent().getStringExtra("enigma");
+        System.out.println("avant getResources");
+        InputStream files = getResources().openRawResource(R.raw.enigma1);
+        System.out.println("apres getResources");
+        enigma = new Enigma(files);
+        System.out.println("apres enigme");
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
-
         dialogBox = findViewById(R.id.detectivedialog);
         detectiveImage = findViewById(R.id.detective);
+        allDialogBox = findViewById(R.id.all_dialog_box);
 
         if (fusedLocationProviderClient == null) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -91,7 +110,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         return;
                     }
                     for (Location location : locationResult.getLocations()) {
-                        updateMark(location);
+                        gLocation = location;
+                        //updateMark(location);
                         return;
                     }
                 }
@@ -114,18 +134,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         shakeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
-
-
         playSong();
+
+        System.out.println(R.raw.enigma1);
     }
 
 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.getUiSettings().setCompassEnabled(false);
-        //mMap.getUiSettings().setZoomGesturesEnabled(false);
+        mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mMap.setMyLocationEnabled(true);
     }
 
 
@@ -173,8 +192,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(requestCode == MY_PERMISSIONS_REQUEST_CAMERA){
             Bitmap captureImage = (Bitmap) data.getExtras().get("data");
         }
-
-
     }
 
 
@@ -189,8 +206,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         acelVal = (float) Math.sqrt((double)(x*x+y*y+z*z));
         float delta = acelVal - acelLast;
         shake = shake * 0.9f + delta;
-        if(shake>12) {
-            dialogBox.setText("Test 2");
+        if(shake>25) {
+            setVisiblyDetective(VISIBLE);
+            dialogBox.setText("こんにちは、私の名前はラウラで、私は探偵です。");
+            delayDetectiveUnvisible(5000);
         }
     }
 
@@ -210,8 +229,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     startLocationUpdates();
                 } else {
-
-                    updateMark(null);
+                    //updateMark(null);
                 }
                 return;
             }
@@ -288,22 +306,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void setVisiblyDetective(int visible){
+
+    private void setVisibleAllDialog(int visible){
 
         switch (visible){
 
             case UNVISIBLE:
 
-                detectiveImage.setVisibility(View.GONE);
-                dialogBox.setVisibility(View.GONE);
+                allDialogBox.setVisibility(View.GONE);
 
             case VISIBLE:
 
-                detectiveImage.setVisibility(View.VISIBLE);
-                dialogBox.setVisibility(View.VISIBLE);
+                allDialogBox.setVisibility(View.VISIBLE);
+
         }
 
     }
+    private void setVisiblyDetective(int visible){
+        System.out.println("function visible");
+        switch (visible){
+
+            case UNVISIBLE:
+                System.out.println("Try unenable picture");
+                detectiveImage.setVisibility(View.GONE);
+                dialogBox.setVisibility(View.GONE);
+                break;
+            case VISIBLE:
+                detectiveImage.setVisibility(View.VISIBLE);
+                dialogBox.setVisibility(View.VISIBLE);
+                break;
+        }
+
+    }
+
+    private void delayDetectiveUnvisible(int delay){
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setVisiblyDetective(UNVISIBLE);
+            }
+        },delay);
+    }
+
+    private void delayAllDialogBoxUnvisible(int delay){
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setVisibleAllDialog(UNVISIBLE);
+            }
+        },delay);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+        if (this.gestureDetector.onTouchEvent(event)) {
+            return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+
 
 }
 

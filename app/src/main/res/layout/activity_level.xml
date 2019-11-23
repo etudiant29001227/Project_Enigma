@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_alpha"
-    tools:context=".Level">
+    tools:context=".LevelActivity">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -18,7 +18,7 @@
             android:textSize="5mm"
             android:textColor="@color/colorPrimaryDark"
             android:textStyle="bold"
-            android:text="@string/title_egnime"
+            android:text="@string/title_enigme"
             android:layout_marginTop="50dp"/>
     </LinearLayout>
 
@@ -35,35 +35,10 @@
             android:layout_width="91dp"
             android:layout_height="48dp"
             android:layout_marginBottom="15dp"
-            android:text="@string/egnime" />
+            android:text="@string/egnime"
+            android:background="@color/alphaZero"/>
 
-<!--        <Button-->
-<!--            android:id="@+id/difficulty4"-->
-<!--            android:layout_width="88dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginBottom="15dp"-->
-<!--            android:text="@string/egnime" />-->
 
-<!--        <Button-->
-<!--            android:id="@+id/difficulty3"-->
-<!--            android:layout_width="91dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginBottom="15dp"-->
-<!--            android:text="@string/egnime" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/difficulty2"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginBottom="15dp"-->
-<!--            android:text="@string/egnime" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/difficulty1"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginBottom="15dp"-->
-<!--            android:text="@string/egnime" />-->
     </LinearLayout>
 
 </RelativeLayout>

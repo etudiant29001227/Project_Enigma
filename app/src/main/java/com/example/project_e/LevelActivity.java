@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class Level extends AppCompatActivity {
+public class LevelActivity extends AppCompatActivity {
     private Button enigma;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,10 +20,18 @@ public class Level extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent otherActivity = new Intent(getApplicationContext(),MapsActivity.class);
+                otherActivity.putExtra("enigma","enigme1");
                 startActivity(otherActivity);
                 finish();
 
             }
         });
+    }
+
+    @Override
+    public void onBackPressed(){
+        Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }
